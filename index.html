@@ -1,1 +1,284 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Spel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            min-height: 100vh;
+        }
 
+        /* 3D Card Flipping Styles */
+        .perspective {
+            perspective: 1000px;
+        }
+        
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+        
+        .card.flipped .card-inner,
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* The back of the card (what you see initially) */
+        .card-back {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            font-size: 2rem;
+        }
+        
+        /* The front of the card (the hidden image/emoji) */
+        .card-front {
+            background-color: white;
+            transform: rotateY(180deg);
+            font-size: 3rem;
+        }
+
+        /* Modal Animation */
+        .modal-enter {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center py-10">
+
+    <!-- Header Section -->
+    <div class="mb-6 text-center">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">Memory</h1>
+        
+        <div class="flex space-x-8 text-lg font-semibold text-gray-700 bg-white px-6 py-3 rounded-full shadow-sm">
+            <div>Zetten: <span id="moves" class="text-blue-600">0</span></div>
+            <div>Tijd: <span id="time" class="text-blue-600">0</span>s</div>
+        </div>
+    </div>
+
+    <!-- Game Board -->
+    <div id="game-board" class="grid grid-cols-4 gap-3 sm:gap-4 p-4 bg-white/50 rounded-2xl shadow-lg backdrop-blur-sm mx-auto w-[95vw] max-w-[500px] aspect-square">
+        <!-- Cards will be injected here by JavaScript -->
+    </div>
+
+    <!-- Controls -->
+    <button onclick="startGame()" class="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors duration-200 shadow-md transform hover:scale-105">
+        Herstart Spel
+    </button>
+
+    <!-- Victory Modal -->
+    <div id="victory-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl modal-enter">
+            <div class="text-6xl mb-4">🎉</div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Gefeliciteerd!</h2>
+            <p class="text-gray-600 mb-6">Je hebt alle paren gevonden.</p>
+            
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="bg-blue-50 rounded-lg p-3">
+                    <p class="text-sm text-gray-500 font-semibold">Tijd</p>
+                    <p id="final-time" class="text-xl font-bold text-blue-600">0s</p>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-3">
+                    <p class="text-sm text-gray-500 font-semibold">Zetten</p>
+                    <p id="final-moves" class="text-xl font-bold text-blue-600">0</p>
+                </div>
+            </div>
+            
+            <button onclick="closeModalAndRestart()" class="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-colors duration-200">
+                Speel Nog Een Keer
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Game Emojis (8 pairs = 16 cards)
+        const emojis = ['🍎', '🍌', '🍉', '🍇', '🍓', '🍒', '🍍', '🥝'];
+        let cards = [];
+        
+        // Game State
+        let hasFlippedCard = false;
+        let lockBoard = false;
+        let firstCard, secondCard;
+        let moves = 0;
+        let matches = 0;
+        let timer;
+        let seconds = 0;
+        let isTimerRunning = false;
+
+        // DOM Elements
+        const board = document.getElementById('game-board');
+        const movesElement = document.getElementById('moves');
+        const timeElement = document.getElementById('time');
+        const modal = document.getElementById('victory-modal');
+        const finalTimeElement = document.getElementById('final-time');
+        const finalMovesElement = document.getElementById('final-moves');
+
+        // Initialize Game
+        function startGame() {
+            // Reset state
+            clearInterval(timer);
+            hasFlippedCard = false;
+            lockBoard = false;
+            firstCard = null;
+            secondCard = null;
+            moves = 0;
+            matches = 0;
+            seconds = 0;
+            isTimerRunning = false;
+            
+            // Update UI
+            movesElement.textContent = moves;
+            timeElement.textContent = seconds;
+            board.innerHTML = '';
+            modal.classList.add('hidden');
+
+            // Create Deck
+            cards = [...emojis, ...emojis];
+            shuffle(cards);
+
+            // Generate Cards DOM
+            cards.forEach((emoji, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card', 'perspective');
+                cardElement.dataset.emoji = emoji;
+                
+                cardElement.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">${emoji}</div>
+                        <div class="card-back">?</div>
+                    </div>
+                `;
+                
+                cardElement.addEventListener('click', flipCard);
+                board.appendChild(cardElement);
+            });
+        }
+
+        // Shuffle Array (Fisher-Yates)
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        // Timer functionality
+        function startTimer() {
+            if (!isTimerRunning) {
+                isTimerRunning = true;
+                timer = setInterval(() => {
+                    seconds++;
+                    timeElement.textContent = seconds;
+                }, 1000);
+            }
+        }
+
+        // Card Click Logic
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === firstCard) return;
+
+            // Start timer on first click
+            startTimer();
+
+            this.classList.add('flipped');
+
+            if (!hasFlippedCard) {
+                // First click
+                hasFlippedCard = true;
+                firstCard = this;
+                return;
+            }
+
+            // Second click
+            secondCard = this;
+            updateMoves();
+            checkForMatch();
+        }
+
+        function updateMoves() {
+            moves++;
+            movesElement.textContent = moves;
+        }
+
+        function checkForMatch() {
+            let isMatch = firstCard.dataset.emoji === secondCard.dataset.emoji;
+
+            if (isMatch) {
+                disableCards();
+                matches++;
+                if (matches === emojis.length) {
+                    setTimeout(showVictory, 500); // Wait for animation
+                }
+            } else {
+                unflipCards();
+            }
+        }
+
+        function disableCards() {
+            firstCard.removeEventListener('click', flipCard);
+            secondCard.removeEventListener('click', flipCard);
+            firstCard.classList.add('matched');
+            secondCard.classList.add('matched');
+            resetBoard();
+        }
+
+        function unflipCards() {
+            lockBoard = true;
+
+            setTimeout(() => {
+                firstCard.classList.remove('flipped');
+                secondCard.classList.remove('flipped');
+                resetBoard();
+            }, 1000); // 1 second delay before flipping back
+        }
+
+        function resetBoard() {
+            [hasFlippedCard, lockBoard] = [false, false];
+            [firstCard, secondCard] = [null, null];
+        }
+
+        function showVictory() {
+            clearInterval(timer);
+            finalTimeElement.textContent = seconds + 's';
+            finalMovesElement.textContent = moves;
+            modal.classList.remove('hidden');
+        }
+
+        function closeModalAndRestart() {
+            modal.classList.add('hidden');
+            startGame();
+        }
+
+        // Start the game initially
+        window.onload = startGame;
+
+    </script>
+</body>
+</html>
