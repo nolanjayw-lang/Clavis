@@ -1,284 +1,446 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memory Spel</title>
+    <title>EasyMail | Jouw AI E-mail Assistent</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        },
+                        darkbg: '#0b0f17',
+                        cardbg: '#111827',
+                        borderbg: '#1f2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            min-height: 100vh;
+        /* Custom scrollbar & Glow effects */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-
-        /* 3D Card Flipping Styles */
-        .perspective {
-            perspective: 1000px;
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
         }
-        
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
-            transform-style: preserve-3d;
-            cursor: pointer;
+        ::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 4px;
         }
-        
-        .card.flipped .card-inner,
-        .card.matched .card-inner {
-            transform: rotateY(180deg);
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
         }
-        
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        .glow-effect {
+            box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.25);
         }
-        
-        /* The back of the card (what you see initially) */
-        .card-back {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-            color: white;
-            font-size: 2rem;
-        }
-        
-        /* The front of the card (the hidden image/emoji) */
-        .card-front {
-            background-color: white;
-            transform: rotateY(180deg);
-            font-size: 3rem;
-        }
-
-        /* Modal Animation */
-        .modal-enter {
-            animation: fadeIn 0.3s ease-out forwards;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
+        .bg-grid {
+            background-size: 30px 30px;
+            background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center py-10">
+<body class="bg-darkbg text-gray-100 font-sans antialiased min-h-screen flex flex-col bg-grid">
 
-    <!-- Header Section -->
-    <div class="mb-6 text-center">
-        <h1 class="text-4xl font-extrabold text-gray-800 mb-4 tracking-tight">Memory</h1>
-        
-        <div class="flex space-x-8 text-lg font-semibold text-gray-700 bg-white px-6 py-3 rounded-full shadow-sm">
-            <div>Zetten: <span id="moves" class="text-blue-600">0</span></div>
-            <div>Tijd: <span id="time" class="text-blue-600">0</span>s</div>
+    <!-- Header / Navigatie -->
+    <header class="sticky top-0 z-50 backdrop-blur-md bg-darkbg/80 border-b border-borderbg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-brand-500/30">
+                    <i class="fa-solid me-paper-plane text-white text-xl"></i>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-brand-500">
+                    EasyMail AI
+                </span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-300">
+                <a href="#features" class="hover:text-brand-500 transition-colors">Functies</a>
+                <a href="#demo" class="hover:text-brand-500 transition-colors">Live Demo</a>
+                <a href="#github" class="hover:text-brand-500 transition-colors">GitHub & Bot Setup</a>
+                <a href="#pricing" class="hover:text-brand-500 transition-colors">Prijzen</a>
+            </nav>
+
+            <!-- Call-to-action Button -->
+            <div class="flex items-center space-x-4">
+                <a href="https://github.com" target="_blank" class="hidden sm:flex items-center space-x-2 text-sm text-gray-400 hover:text-white transition-colors">
+                    <i class="fa-brands fa-github text-lg"></i>
+                    <span>GitHub Repo</span>
+                </a>
+                <a href="#demo" class="bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-all shadow-md shadow-brand-600/20">
+                    Probeer Nu
+                </a>
+            </div>
         </div>
-    </div>
+    </header>
 
-    <!-- Game Board -->
-    <div id="game-board" class="grid grid-cols-4 gap-3 sm:gap-4 p-4 bg-white/50 rounded-2xl shadow-lg backdrop-blur-sm mx-auto w-[95vw] max-w-[500px] aspect-square">
-        <!-- Cards will be injected here by JavaScript -->
-    </div>
-
-    <!-- Controls -->
-    <button onclick="startGame()" class="mt-8 px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full transition-colors duration-200 shadow-md transform hover:scale-105">
-        Herstart Spel
-    </button>
-
-    <!-- Victory Modal -->
-    <div id="victory-modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 text-center shadow-2xl modal-enter">
-            <div class="text-6xl mb-4">🎉</div>
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Gefeliciteerd!</h2>
-            <p class="text-gray-600 mb-6">Je hebt alle paren gevonden.</p>
-            
-            <div class="grid grid-cols-2 gap-4 mb-8">
-                <div class="bg-blue-50 rounded-lg p-3">
-                    <p class="text-sm text-gray-500 font-semibold">Tijd</p>
-                    <p id="final-time" class="text-xl font-bold text-blue-600">0s</p>
-                </div>
-                <div class="bg-blue-50 rounded-lg p-3">
-                    <p class="text-sm text-gray-500 font-semibold">Zetten</p>
-                    <p id="final-moves" class="text-xl font-bold text-blue-600">0</p>
-                </div>
+    <!-- Hero Section (SurfSense style minimal & modern) -->
+    <section class="relative pt-20 pb-16 md:pt-32 md:pb-24 overflow-hidden">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-500 text-xs font-semibold mb-6">
+                <span class="flex h-2 w-2 rounded-full bg-brand-500 animate-pulse"></span>
+                <span>Informatica Project 2026</span>
             </div>
             
-            <button onclick="closeModalAndRestart()" class="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl transition-colors duration-200">
-                Speel Nog Een Keer
-            </button>
-        </div>
-    </div>
-
-    <script>
-        // Game Emojis (8 pairs = 16 cards)
-        const emojis = ['🍎', '🍌', '🍉', '🍇', '🍓', '🍒', '🍍', '🥝'];
-        let cards = [];
-        
-        // Game State
-        let hasFlippedCard = false;
-        let lockBoard = false;
-        let firstCard, secondCard;
-        let moves = 0;
-        let matches = 0;
-        let timer;
-        let seconds = 0;
-        let isTimerRunning = false;
-
-        // DOM Elements
-        const board = document.getElementById('game-board');
-        const movesElement = document.getElementById('moves');
-        const timeElement = document.getElementById('time');
-        const modal = document.getElementById('victory-modal');
-        const finalTimeElement = document.getElementById('final-time');
-        const finalMovesElement = document.getElementById('final-moves');
-
-        // Initialize Game
-        function startGame() {
-            // Reset state
-            clearInterval(timer);
-            hasFlippedCard = false;
-            lockBoard = false;
-            firstCard = null;
-            secondCard = null;
-            moves = 0;
-            matches = 0;
-            seconds = 0;
-            isTimerRunning = false;
+            <h1 class="text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+                Slimmer e-mailen binnen <span class="bg-clip-text text-transparent bg-gradient-to-r from-brand-500 to-indigo-300">seconden met AI</span>.
+            </h1>
             
-            // Update UI
-            movesElement.textContent = moves;
-            timeElement.textContent = seconds;
-            board.innerHTML = '';
-            modal.classList.add('hidden');
+            <p class="text-lg sm:text-xl text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
+                EasyMail transformeert korte streek-aantekeningen automatisch in professionele, foutloze e-mails. Bespaar tijd en verhoog je productiviteit.
+            </p>
 
-            // Create Deck
-            cards = [...emojis, ...emojis];
-            shuffle(cards);
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="#demo" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold text-base shadow-lg shadow-brand-500/25 transition-all">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Start de Web AI Demo
+                </a>
+                <a href="#github" class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-cardbg border border-borderbg hover:bg-gray-800 text-gray-200 font-semibold text-base transition-all flex items-center justify-center">
+                    <i class="fa-brands fa-python text-yellow-400 mr-2 text-lg"></i> Koppel je Python Bot
+                </a>
+            </div>
+        </div>
+    </section>
 
-            // Generate Cards DOM
-            cards.forEach((emoji, index) => {
-                const cardElement = document.createElement('div');
-                cardElement.classList.add('card', 'perspective');
-                cardElement.dataset.emoji = emoji;
-                
-                cardElement.innerHTML = `
-                    <div class="card-inner">
-                        <div class="card-front">${emoji}</div>
-                        <div class="card-back">?</div>
+    <!-- Feature Grid -->
+    <section id="features" class="py-16 bg-cardbg/50 border-y border-borderbg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl sm:text-3xl font-bold text-white mb-2">Waarom kiezen voor EasyMail?</h2>
+                <p class="text-gray-400 text-sm">Gebouwd om e-mailen moeiteloos te maken voor iedereen.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="p-6 rounded-2xl bg-cardbg border border-borderbg hover:border-brand-500/40 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500 mb-4 text-xl">
+                        <i class="fa-solid fa-bolt"></i>
                     </div>
-                `;
-                
-                cardElement.addEventListener('click', flipCard);
-                board.appendChild(cardElement);
-            });
-        }
+                    <h3 class="text-xl font-bold text-white mb-2">Razendsnel Genereren</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Voer 3 kernwoorden in en krijg direct een complete, zakelijke e-mail terug.
+                    </p>
+                </div>
 
-        // Shuffle Array (Fisher-Yates)
-        function shuffle(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
+                <!-- Feature 2 -->
+                <div class="p-6 rounded-2xl bg-cardbg border border-borderbg hover:border-brand-500/40 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500 mb-4 text-xl">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Aanpasbare Tone of Voice</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Kies eenvoudig tussen formeel, informeel, overtuigend of kort & krachtig.
+                    </p>
+                </div>
 
-        // Timer functionality
-        function startTimer() {
-            if (!isTimerRunning) {
-                isTimerRunning = true;
-                timer = setInterval(() => {
-                    seconds++;
-                    timeElement.textContent = seconds;
-                }, 1000);
-            }
-        }
+                <!-- Feature 3 -->
+                <div class="p-6 rounded-2xl bg-cardbg border border-borderbg hover:border-brand-500/40 transition-all">
+                    <div class="w-12 h-12 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500 mb-4 text-xl">
+                        <i class="fa-solid fa-code-branch"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-2">Python & API Integratie</h3>
+                    <p class="text-gray-400 text-sm leading-relaxed">
+                        Sluit eenvoudig je eigen Python-scripts, Discord-bots of GitHub-worklet aan op de API.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-        // Card Click Logic
-        function flipCard() {
-            if (lockBoard) return;
-            if (this === firstCard) return;
+    <!-- Live Interactive Demo Section -->
+    <section id="demo" class="py-20 relative">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <span class="text-brand-500 font-semibold text-sm uppercase tracking-wider">Interactieve App</span>
+                <h2 class="text-3xl font-extrabold text-white mt-1">EasyMail AI Generator</h2>
+                <p class="text-gray-400 text-sm mt-2">Probeer de AI-assistent hier direct uit!</p>
+            </div>
 
-            // Start timer on first click
-            startTimer();
+            <!-- Demo Card Container -->
+            <div class="bg-cardbg border border-borderbg rounded-2xl p-6 sm:p-8 glow-effect">
+                <div class="space-y-5">
+                    
+                    <!-- Tone select -->
+                    <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                        <label class="text-sm font-medium text-gray-300">Selecteer de gewenste toon:</label>
+                        <select id="toneSelect" class="bg-darkbg border border-borderbg text-gray-200 text-sm rounded-lg p-2.5 focus:ring-brand-500 focus:border-brand-500 w-full sm:w-auto">
+                            <option value="zakelijk en formeel">Formeel & Zakelijk</option>
+                            <option value="vriendelijk en informeel">Vriendelijk & Informeel</option>
+                            <option value="beknopt en krachtig">Beknopt & Krachtig</option>
+                            <option value="enthousiast en overtuigend">Enthousiast & Overtuigend</option>
+                        </select>
+                    </div>
 
-            this.classList.add('flipped');
+                    <!-- Prompt Input -->
+                    <div>
+                        <label for="promptInput" class="block text-sm font-medium text-gray-300 mb-2">
+                            Wat wil je sturen? (Steekwoorden of korte uitleg):
+                        </label>
+                        <textarea id="promptInput" rows="3" class="w-full bg-darkbg border border-borderbg text-gray-200 text-sm rounded-xl p-3.5 focus:ring-2 focus:ring-brand-500 focus:outline-none placeholder-gray-500 resize-none" placeholder="bijv. Vragen of de vergadering verplaatst kan worden naar donderdag 2 uur wegens tandartsafspraak"></textarea>
+                    </div>
 
-            if (!hasFlippedCard) {
-                // First click
-                hasFlippedCard = true;
-                firstCard = this;
+                    <!-- Generate Button -->
+                    <button id="generateBtn" onclick="generateEmail()" class="w-full bg-brand-600 hover:bg-brand-500 text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center space-x-2 shadow-md shadow-brand-600/30">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <span>Genereer E-mail</span>
+                    </button>
+
+                    <!-- Loader (Hidden by default) -->
+                    <div id="loadingState" class="hidden py-8 text-center">
+                        <i class="fa-solid fa-circle-notch animate-spin text-brand-500 text-3xl mb-3"></i>
+                        <p class="text-sm text-gray-400">EasyMail AI schrijft jouw e-mail...</p>
+                    </div>
+
+                    <!-- Output Area (Hidden by default) -->
+                    <div id="outputContainer" class="hidden mt-6 pt-6 border-t border-borderbg">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-semibold text-brand-500 uppercase tracking-wider">Resultaat</span>
+                            <button onclick="copyToClipboard()" class="text-xs text-gray-400 hover:text-white flex items-center space-x-1 bg-darkbg px-2.5 py-1 rounded border border-borderbg transition-colors">
+                                <i class="fa-regular fa-copy"></i>
+                                <span id="copyText">Kopiëren</span>
+                            </button>
+                        </div>
+                        <div id="emailOutput" class="bg-darkbg p-4 rounded-xl border border-borderbg text-gray-200 text-sm whitespace-pre-wrap leading-relaxed font-mono"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GitHub & External Python Integration Section -->
+    <section id="github" class="py-16 bg-cardbg/30 border-t border-borderbg">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-brand-500 font-semibold text-sm uppercase">Informatica & Python Integration</span>
+                <h2 class="text-3xl font-extrabold text-white mt-1">Koppel je eigen Python Script of Discord Bot</h2>
+                <p class="text-gray-400 text-sm mt-2">Werk met je hele klas of groepje samen aan de AI achterkant.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Python Code Snippet -->
+                <div class="bg-cardbg border border-borderbg rounded-2xl p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-brands fa-python text-yellow-400 text-xl"></i>
+                            <span class="text-white font-semibold text-sm">easymail_bot.py</span>
+                        </div>
+                        <span class="text-xs bg-gray-800 text-gray-400 px-2.5 py-1 rounded">Python 3.10+</span>
+                    </div>
+                    <pre class="bg-darkbg p-4 rounded-xl text-xs text-gray-300 font-mono overflow-x-auto border border-borderbg leading-relaxed">
+<span class="text-purple-400">import</span> google.generativeai <span class="text-purple-400">as</span> genai
+
+<span class="text-gray-500"># Configureer je Gemini API Key</span>
+genai.configure(api_key=<span class="text-green-400">"JOUW_API_KEY"</span>)
+
+<span class="text-purple-400">def</span> <span class="text-blue-400">maak_email</span>(onderwerp, toon=<span class="text-green-400">"zakelijk"</span>):
+    model = genai.GenerativeModel(<span class="text-green-400">'gemini-3-flash-preview'</span>)
+    prompt = f<span class="text-green-400">"Schrijf een {toon} e-mail over: {onderwerp}"</span>
+    
+    response = model.generate_content(prompt)
+    <span class="text-purple-400">return</span> response.text
+
+<span class="text-gray-500"># Test het script</span>
+print(maak_email(<span class="text-green-400">"Afwezig wegens ziekte"</span>))
+</pre>
+                </div>
+
+                <!-- GitHub / Replit Workflows -->
+                <div class="space-y-6 flex flex-col justify-between">
+                    <div class="bg-cardbg border border-borderbg rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-white mb-2 flex items-center">
+                            <i class="fa-brands fa-github text-gray-300 mr-2"></i> Samenwerken via GitHub
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Plaats je code op GitHub zodat iedereen uit je groepje tegelijk functionaliteiten (zoals een Discord-bot of Flask API) kan toevoegen.
+                        </p>
+                        <a href="https://github.com" target="_blank" class="inline-flex items-center text-xs font-semibold text-brand-500 hover:text-brand-400">
+                            Bekijk repository op GitHub <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+
+                    <div class="bg-cardbg border border-borderbg rounded-2xl p-6">
+                        <h3 class="text-lg font-bold text-white mb-2 flex items-center">
+                            <i class="fa-brands fa-discord text-indigo-400 mr-2"></i> Koppel een Discord AI-bot
+                        </h3>
+                        <p class="text-gray-400 text-sm mb-4">
+                            Laat je Python-script draaien als een Discord-bot. Gebruikers in een server typen <code class="text-brand-400">!email [onderwerp]</code> en de bot antwoordt met een perfecte e-mail!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing / Business Model Section -->
+    <section id="pricing" class="py-16">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="text-brand-500 font-semibold text-sm uppercase">Verdienmodel</span>
+                <h2 class="text-3xl font-extrabold text-white mt-1">Eenvoudige & Transparante Prijzen</h2>
+                <p class="text-gray-400 text-sm mt-2">Het businessmodel voor het informaticaproject.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
+                <!-- Free Tier -->
+                <div class="bg-cardbg border border-borderbg rounded-2xl p-8 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Starter (Gratis)</h3>
+                        <p class="text-gray-400 text-xs mt-1">Voor scholieren en testen</p>
+                        <div class="my-6">
+                            <span class="text-4xl font-extrabold text-white">€0</span>
+                            <span class="text-gray-400 text-sm">/ maand</span>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-300 mb-6">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> 5 AI E-mails per dag</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> Standaard schrijfstijlen</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> Live Web Demo toegang</li>
+                        </ul>
+                    </div>
+                    <button class="w-full py-2.5 rounded-xl border border-borderbg bg-darkbg text-gray-300 font-semibold text-sm hover:bg-gray-800 transition-colors">
+                        Huidige Plan
+                    </button>
+                </div>
+
+                <!-- Pro Tier -->
+                <div class="bg-cardbg border-2 border-brand-500 rounded-2xl p-8 flex flex-col justify-between relative shadow-xl shadow-brand-500/10">
+                    <div class="absolute -top-3 right-6 bg-brand-500 text-white text-xs px-3 py-1 rounded-full font-semibold">Populair</div>
+                    <div>
+                        <h3 class="text-xl font-bold text-white">Pro Pass</h3>
+                        <p class="text-gray-400 text-xs mt-1">Voor intensieve gebruikers</p>
+                        <div class="my-6">
+                            <span class="text-4xl font-extrabold text-white">€2,99</span>
+                            <span class="text-gray-400 text-sm">/ maand</span>
+                        </div>
+                        <ul class="space-y-3 text-sm text-gray-300 mb-6">
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> Onbeperkt E-mails genereren</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> Discord Bot Premium toegang</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> Eigen sjablonen opslaan</li>
+                            <li class="flex items-center"><i class="fa-solid fa-check text-green-400 mr-2"></i> Sneller AI-reactiemodel</li>
+                        </ul>
+                    </div>
+                    <button class="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-sm transition-all shadow-md shadow-brand-600/30">
+                        Upgrade naar Pro
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-borderbg py-8 bg-darkbg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 space-y-4 sm:space-y-0">
+            <div class="flex items-center space-x-2">
+                <span class="font-bold text-gray-300">EasyMail AI</span>
+                <span>&copy; 2026 Informatica Project.</span>
+            </div>
+            <div class="flex space-x-6">
+                <a href="#demo" class="hover:text-gray-300">Demo</a>
+                <a href="#github" class="hover:text-gray-300">GitHub</a>
+                <a href="#pricing" class="hover:text-gray-300">Prijzen</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript voor AI Interactie via Gemini API -->
+    <script>
+        async function generateEmail() {
+            const promptInput = document.getElementById('promptInput').value.trim();
+            const toneSelect = document.getElementById('toneSelect').value;
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingState = document.getElementById('loadingState');
+            const outputContainer = document.getElementById('outputContainer');
+            const emailOutput = document.getElementById('emailOutput');
+
+            if (!promptInput) {
+                alert('Vul a.u.b. steekwoorden of een korte instructie in!');
                 return;
             }
 
-            // Second click
-            secondCard = this;
-            updateMoves();
-            checkForMatch();
-        }
+            // UI updating naar Loading state
+            generateBtn.disabled = true;
+            generateBtn.classList.add('opacity-50');
+            loadingState.classList.remove('hidden');
+            outputContainer.classList.add('hidden');
 
-        function updateMoves() {
-            moves++;
-            movesElement.textContent = moves;
-        }
+            const systemPrompt = `Je bent EasyMail AI, een professionele e-mail assistent. Genereer een complete e-mail op basis van de input van de gebruiker. Schrijf in de volgende toon: ${toneSelect}. Zorg voor een geschikte onderwerpregel, aanhef, duidelijke alinea's en een nette afsluiting.`;
+            const userQuery = `Onderwerp/Instructie: ${promptInput}`;
 
-        function checkForMatch() {
-            let isMatch = firstCard.dataset.emoji === secondCard.dataset.emoji;
+            const apiKey = ""; // API Key wordt automatisch vanuit Canvas ingesteld
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
 
-            if (isMatch) {
-                disableCards();
-                matches++;
-                if (matches === emojis.length) {
-                    setTimeout(showVictory, 500); // Wait for animation
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
                 }
-            } else {
-                unflipCards();
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+                const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (resultText) {
+                    emailOutput.textContent = resultText;
+                    outputContainer.classList.remove('hidden');
+                } else {
+                    emailOutput.textContent = "Er is een fout opgetreden bij het genereren van de e-mail. Probeer het opnieuw.";
+                    outputContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error("Fout tijdens API fetch:", error);
+                emailOutput.textContent = "Kon geen verbinding maken met de AI service. Controleer je netwerk.";
+                outputContainer.classList.remove('hidden');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.classList.remove('opacity-50');
+                loadingState.classList.add('hidden');
             }
         }
 
-        function disableCards() {
-            firstCard.removeEventListener('click', flipCard);
-            secondCard.removeEventListener('click', flipCard);
-            firstCard.classList.add('matched');
-            secondCard.classList.add('matched');
-            resetBoard();
-        }
+        function copyToClipboard() {
+            const emailText = document.getElementById('emailOutput').textContent;
+            if (!emailText) return;
 
-        function unflipCards() {
-            lockBoard = true;
+            const tempInput = document.createElement('textarea');
+            tempInput.value = emailText;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
 
+            const copyTextSpan = document.getElementById('copyText');
+            copyTextSpan.textContent = 'Gekopieerd!';
             setTimeout(() => {
-                firstCard.classList.remove('flipped');
-                secondCard.classList.remove('flipped');
-                resetBoard();
-            }, 1000); // 1 second delay before flipping back
+                copyTextSpan.textContent = 'Kopiëren';
+            }, 2000);
         }
-
-        function resetBoard() {
-            [hasFlippedCard, lockBoard] = [false, false];
-            [firstCard, secondCard] = [null, null];
-        }
-
-        function showVictory() {
-            clearInterval(timer);
-            finalTimeElement.textContent = seconds + 's';
-            finalMovesElement.textContent = moves;
-            modal.classList.remove('hidden');
-        }
-
-        function closeModalAndRestart() {
-            modal.classList.add('hidden');
-            startGame();
-        }
-
-        // Start the game initially
-        window.onload = startGame;
-
     </script>
 </body>
 </html>
