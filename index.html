@@ -1,109 +1,590 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="nl" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EasyMail</title>
+    <title>AI Email Sorter - Schoolproject</title>
+    <!-- Tailwind CSS voor styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons voor strakke iconen -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        oled: '#09090b',
+                        surface: '#121215',
+                        surfaceHover: '#1c1c21',
+                        borderDark: '#27272a'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
+        /* Custom scrollbar voor een strakke afwerking */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f46;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52525b;
         }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-100 antialiased min-h-screen flex flex-col justify-between">
+<body class="bg-gray-100 dark:bg-oled text-gray-900 dark:text-zinc-100 font-sans antialiased transition-colors duration-300 h-screen overflow-hidden flex flex-col">
 
-    <!-- Navigatie -->
-    <header class="max-w-5xl mx-auto w-full px-6 py-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
+    <!-- Hoofdcontainer: Split-screen layout zoals in het voorbeeld -->
+    <div class="flex flex-1 h-full overflow-hidden">
+
+        <!-- LINKER ZIJBALK: AI Assistent & Auto-Sorter Controls -->
+        <aside id="ai-sidebar" class="w-full md:w-80 lg:w-96 bg-white dark:bg-surface border-r border-gray-200 dark:border-borderDark flex flex-col justify-between p-5 transition-all duration-300 z-20 hidden md:flex">
+            
+            <!-- Bovenste deel van zijbalk -->
+            <div>
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                        </div>
+                        <span class="font-semibold text-base tracking-tight">MailSort AI</span>
+                    </div>
+                    <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">v1.0 School</span>
+                </div>
+
+                <!-- AI Prompt Box (geïnspireerd op de afbeelding) -->
+                <div class="text-center my-6">
+                    <h2 class="text-lg font-medium mb-4 text-gray-800 dark:text-zinc-200">Hoe kan ik je inbox ordenen?</h2>
+                    
+                    <div class="bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-2xl p-3 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                        <textarea id="ai-input" rows="2" placeholder="Bijv: Sorteer alle nieuwe e-mails of filter op security..." class="w-full bg-transparent text-sm resize-none focus:outline-none text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-500"></textarea>
+                        <div class="flex items-center justify-between pt-2 mt-2 border-t border-gray-200 dark:border-zinc-800">
+                            <div class="flex gap-1.5 text-gray-400">
+                                <button onclick="simulateNewEmails()" title="Simuleer binnenkomende mails" class="p-1.5 hover:text-indigo-500 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+                                    <i data-lucide="mail-plus" class="w-4 h-4"></i>
+                                </button>
+                                <button onclick="runAutoSort()" title="Start AI Sorter" class="p-1.5 hover:text-indigo-500 hover:bg-gray-200 dark:hover:bg-zinc-800 rounded-lg transition-colors">
+                                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <button onclick="runAutoSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all shadow-md shadow-indigo-600/20">
+                                <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+                                <span>Auto-Sorteer</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Snelle AI Actie Knoppen -->
+                <div class="space-y-2 mt-6">
+                    <p class="text-xs font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider px-1">Snelle Acties</p>
+                    <button onclick="filterCategory('security')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-zinc-900/60 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800/80 flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2.5">
+                            <i data-lucide="shield-alert" class="w-4 h-4 text-rose-500"></i>
+                            <span>Vind urgente security mails</span>
+                        </span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400"></i>
+                    </button>
+
+                    <button onclick="filterCategory('spam')" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-zinc-900/60 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800/80 flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2.5">
+                            <i data-lucide="trash-2" class="w-4 h-4 text-amber-500"></i>
+                            <span>Controleer gedetecteerde spam</span>
+                        </span>
+                        <i data-lucide="arrow-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400"></i>
+                    </button>
+
+                    <button onclick="simulateNewEmails()" class="w-full text-left px-3.5 py-2.5 rounded-xl text-sm bg-gray-50 dark:bg-zinc-900/60 hover:bg-gray-100 dark:hover:bg-zinc-800 border border-gray-200 dark:border-zinc-800/80 flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2.5">
+                            <i data-lucide="refresh-cw" class="w-4 h-4 text-emerald-500"></i>
+                            <span>Simuleer nieuwe e-mails</span>
+                        </span>
+                        <i data-lucide="plus" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400"></i>
+                    </button>
+                </div>
             </div>
-            <span class="text-xl font-bold tracking-tight text-white">EasyMail</span>
-        </div>
 
-        <button 
-            onclick="openBot()" 
-            class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-sm font-semibold transition cursor-pointer"
-        >
-            Open AI Bot
-        </button>
-    </header>
-
-    <!-- Centrale Sectie -->
-    <main class="max-w-3xl mx-auto px-6 text-center my-auto py-12">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium mb-6">
-            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-            Status: Nog niet gekoppeld
-        </div>
-
-        <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6">
-            EasyMail AI
-        </h1>
-
-        <p class="text-slate-400 text-base sm:text-lg mb-10 max-w-md mx-auto">
-            Start hier jouw AI-assistent.
-        </p>
-
-        <button 
-            onclick="openBot()" 
-            class="px-8 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 text-white font-bold text-lg shadow-xl shadow-indigo-500/25 transition-all transform hover:-translate-y-0.5 inline-flex items-center gap-3 cursor-pointer"
-        >
-            <span>Ga naar AI Bot</span>
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-        </button>
-    </main>
-
-    <!-- Footer -->
-    <footer class="py-6 text-center text-xs text-slate-600">
-        &copy; 2026 EasyMail
-    </footer>
-
-    <!-- Melding als de bot nog niet gelinkt is -->
-    <div id="customModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
-            <div class="w-12 h-12 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center mx-auto mb-4">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
+            <!-- Onderste status kaart in zijbalk -->
+            <div class="bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-2xl p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-medium text-gray-500 dark:text-zinc-400">AI Classificatie Model</span>
+                    <span class="flex items-center gap-1.5 text-xs text-emerald-500 font-medium">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Actief
+                    </span>
+                </div>
+                <p class="text-xs text-gray-500 dark:text-zinc-500 leading-relaxed">
+                    E-mails worden automatisch gescand op afzender, onderwerp en inhoud om ze in de juiste categorie te plaatsen.
+                </p>
             </div>
-            <h3 class="text-lg font-bold text-white mb-2">Bot nog niet gelinkt</h3>
-            <p class="text-sm text-slate-400 mb-6">
-                Deze AI-bot is nog niet gekoppeld aan een URL.
+        </aside>
+
+        <!-- RECHTER HOOFDSCHERM: Inbox & Categorieën -->
+        <main class="flex-1 flex flex-col bg-white dark:bg-oled overflow-hidden">
+            
+            <!-- Top Header Balk -->
+            <header class="h-16 border-b border-gray-200 dark:border-borderDark px-4 md:px-6 flex items-center justify-between gap-4 shrink-0">
+                <div class="flex items-center gap-3">
+                    <!-- Mobiele menu knop -->
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-surface">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <div class="flex items-center gap-2 font-semibold text-lg">
+                        <i data-lucide="inbox" class="w-5 h-5 text-indigo-500"></i>
+                        <span>Inbox</span>
+                    </div>
+                </div>
+
+                <!-- Zoekbalk -->
+                <div class="flex-1 max-w-xl">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"></i>
+                        <input type="text" id="search-input" onkeyup="renderEmails()" placeholder="Zoek op onderwerp, afzender of AI-label..." class="w-full bg-gray-100 dark:bg-surface border border-transparent focus:border-indigo-500 dark:focus:border-indigo-500 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none transition-all placeholder-gray-400 dark:placeholder-zinc-500">
+                    </div>
+                </div>
+
+                <!-- Rechter Controls: Thema Switcher & Test Knop -->
+                <div class="flex items-center gap-2.5">
+                    <!-- Thema Switcher -->
+                    <button onclick="toggleTheme()" id="theme-btn" title="Wissel tussen Zwart (Dark) en Licht thema" class="p-2.5 rounded-xl bg-gray-100 dark:bg-surface hover:bg-gray-200 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark text-gray-700 dark:text-zinc-300 transition-all flex items-center gap-2 text-xs font-medium">
+                        <i id="theme-icon" data-lucide="sun" class="w-4 h-4 text-amber-400"></i>
+                        <span class="hidden sm:inline" id="theme-text">Light Mode</span>
+                    </button>
+
+                    <!-- Nieuwe Mail Testen Knop -->
+                    <button onclick="openTestModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-sm font-medium flex items-center gap-2 transition-all shadow-sm">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Test Mail</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Categorie Tabs (Alle, Security, Business, Personal, Promotions, Spam) -->
+            <div class="border-b border-gray-200 dark:border-borderDark px-4 md:px-6 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0 bg-gray-50/50 dark:bg-surface/40">
+                <button onclick="filterCategory('all')" data-tab="all" class="tab-btn active-tab flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap transition-all">
+                    <i data-lucide="layers" class="w-4 h-4"></i>
+                    <span>Alles</span>
+                    <span id="count-all" class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500">0</span>
+                </button>
+
+                <button onclick="filterCategory('security')" data-tab="security" class="tab-btn flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="shield-alert" class="w-4 h-4 text-rose-500"></i>
+                    <span>Security</span>
+                    <span id="count-security" class="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">0</span>
+                </button>
+
+                <button onclick="filterCategory('business')" data-tab="business" class="tab-btn flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="briefcase" class="w-4 h-4 text-blue-500"></i>
+                    <span>Business</span>
+                    <span id="count-business" class="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">0</span>
+                </button>
+
+                <button onclick="filterCategory('personal')" data-tab="personal" class="tab-btn flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="user" class="w-4 h-4 text-emerald-500"></i>
+                    <span>Personal</span>
+                    <span id="count-personal" class="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">0</span>
+                </button>
+
+                <button onclick="filterCategory('promotions')" data-tab="promotions" class="tab-btn flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="tag" class="w-4 h-4 text-purple-500"></i>
+                    <span>Promotions</span>
+                    <span id="count-promotions" class="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">0</span>
+                </button>
+
+                <button onclick="filterCategory('spam')" data-tab="spam" class="tab-btn flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="alert-octagon" class="w-4 h-4 text-amber-500"></i>
+                    <span>Spam</span>
+                    <span id="count-spam" class="text-xs px-2 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">0</span>
+                </button>
+            </div>
+
+            <!-- Sub-balk met status / notificatie -->
+            <div id="status-banner" class="px-6 py-2 bg-indigo-500/10 border-b border-indigo-500/20 text-xs text-indigo-600 dark:text-indigo-300 flex items-center justify-between hidden">
+                <span id="status-text" class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    AI heeft je e-mails succesvol geanalyseerd en gesorteerd.
+                </span>
+                <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="hover:underline">Sluiten</button>
+            </div>
+
+            <!-- E-mail Lijst -->
+            <div id="email-list" class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-borderDark">
+                <!-- E-mails worden hier dynamisch ingeladen via JavaScript -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL: Nieuwe E-mail Testen (Laat de AI hem automatisch sorteren!) -->
+    <div id="test-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-surface border border-gray-200 dark:border-borderDark rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold flex items-center gap-2">
+                    <i data-lucide="bot" class="w-5 h-5 text-indigo-500"></i>
+                    Test de AI Sorter
+                </h3>
+                <button onclick="closeTestModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-zinc-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-zinc-400 mb-4">
+                Typ een nep e-mail. Het systeem analyseert de woorden en kiest automatisch een categorie (Security, Business, Personal, Promotions of Spam).
             </p>
-            <button 
-                onclick="closeModal()" 
-                class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition cursor-pointer"
-            >
-                Sluiten
-            </button>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Afzender</label>
+                    <input type="text" id="new-sender" placeholder="Bijv: Microsoft Security of Bol.com" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Onderwerp</label>
+                    <input type="text" id="new-subject" placeholder="Bijv: Nieuwe inlogpoging gedetecteerd" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Bericht tekst</label>
+                    <textarea id="new-snippet" rows="3" placeholder="Bijv: Klik hier om je wachtwoord te resetten..." class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="closeTestModal()" class="px-4 py-2 rounded-xl text-sm text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-800">Annuleren</button>
+                <button onclick="addAndSortEmail()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    <span>Analyseer & Voeg toe</span>
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- JAVASCRIPT LOGICA -->
     <script>
-        // Vul hier later de link naar jouw AI-bot in tussen de aanhalingstekens
-        const botUrl = ""; 
+        // Initialiseer Lucide Iconen
+        lucide.createIcons();
 
-        function openBot() {
-            if (botUrl && botUrl.trim() !== "") {
-                window.open(botUrl, '_blank', 'noopener,noreferrer');
-            } else {
-                const modal = document.getElementById('customModal');
-                modal.classList.remove('hidden');
-                modal.classList.add('flex');
+        // Huidige geselecteerde categorie
+        let currentCategory = 'all';
+
+        // Lege e-mail lijst (wordt gevuld zodra Gmail is gekoppeld of via de Test Mail knop)
+        let emails = [];
+
+        // Styling configuratie per categorie (Badges & Kleuren)
+        const categoryConfig = {
+            security: {
+                label: "Security",
+                badgeClass: "bg-rose-500/15 text-rose-500 border-rose-500/30",
+                icon: "shield-alert"
+            },
+            business: {
+                label: "Business",
+                badgeClass: "bg-blue-500/15 text-blue-500 border-blue-500/30",
+                icon: "briefcase"
+            },
+            personal: {
+                label: "Personal",
+                badgeClass: "bg-emerald-500/15 text-emerald-500 border-emerald-500/30",
+                icon: "user"
+            },
+            promotions: {
+                label: "Promotions",
+                badgeClass: "bg-purple-500/15 text-purple-500 border-purple-500/30",
+                icon: "tag"
+            },
+            spam: {
+                label: "Spam",
+                badgeClass: "bg-amber-500/15 text-amber-500 border-amber-500/30",
+                icon: "alert-octagon"
+            }
+        };
+
+        // Functie om e-mails te renderen op het scherm
+        function renderEmails() {
+            const listContainer = document.getElementById('email-list');
+            const searchQuery = document.getElementById('search-input').value.toLowerCase();
+            listContainer.innerHTML = '';
+
+            // Filter op categorie en zoekopdracht
+            const filteredEmails = emails.filter(email => {
+                const matchesCategory = currentCategory === 'all' || email.category === currentCategory;
+                const matchesSearch = email.sender.toLowerCase().includes(searchQuery) ||
+                                      email.subject.toLowerCase().includes(searchQuery) ||
+                                      email.snippet.toLowerCase().includes(searchQuery) ||
+                                      email.category.toLowerCase().includes(searchQuery);
+                return matchesCategory && matchesSearch;
+            });
+
+            updateCounts();
+
+            if (filteredEmails.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-24 text-center px-4">
+                        <div class="w-14 h-14 rounded-2xl bg-gray-100 dark:bg-surface border border-gray-200 dark:border-borderDark flex items-center justify-center mb-4 text-indigo-500">
+                            <i data-lucide="mail-question" class="w-7 h-7"></i>
+                        </div>
+                        <p class="text-base font-medium text-gray-800 dark:text-zinc-200">Nog geen e-mails gekoppeld</p>
+                        <p class="text-xs text-gray-500 dark:text-zinc-400 mt-1.5 max-w-sm leading-relaxed">
+                            Koppel straks je Gmail-account om echte e-mails automatisch te laten sorteren, of gebruik <span class="text-indigo-500 font-medium">+ Test Mail</span> rechtsboven om de AI nu al te testen.
+                        </p>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            filteredEmails.forEach(email => {
+                const cat = categoryConfig[email.category];
+                const row = document.createElement('div');
+                row.className = `group flex items-center gap-3 md:gap-4 px-4 md:px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-surfaceHover cursor-pointer transition-colors ${email.unread ? 'bg-indigo-50/40 dark:bg-zinc-900/40' : ''}`;
+                row.onclick = () => toggleRead(email.id);
+
+                row.innerHTML = `
+                    <!-- Checkbox & Ster -->
+                    <div class="flex items-center gap-3 shrink-0">
+                        <input type="checkbox" onclick="event.stopPropagation()" class="rounded border-gray-300 dark:border-zinc-700 bg-transparent text-indigo-600 focus:ring-0">
+                        <div class="w-8 h-8 rounded-full ${email.avatarColor} flex items-center justify-center font-semibold text-xs shrink-0">
+                            ${email.initial}
+                        </div>
+                    </div>
+
+                    <!-- Afzender -->
+                    <div class="w-32 md:w-44 truncate shrink-0 text-sm ${email.unread ? 'font-semibold text-gray-900 dark:text-white' : 'font-normal text-gray-700 dark:text-zinc-300'}">
+                        ${email.sender}
+                    </div>
+
+                    <!-- AI Categorie Badge -->
+                    <div class="shrink-0">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${cat.badgeClass}" title="AI Zekerheid: ${email.confidence}">
+                            <i data-lucide="${cat.icon}" class="w-3 h-3"></i>
+                            <span>${cat.label}</span>
+                        </span>
+                    </div>
+
+                    <!-- Onderwerp & Preview tekst -->
+                    <div class="flex-1 min-w-0 flex items-center gap-2 text-sm truncate">
+                        <span class="${email.unread ? 'font-semibold text-gray-900 dark:text-zinc-100' : 'text-gray-700 dark:text-zinc-300'} truncate">
+                            ${email.subject}
+                        </span>
+                        <span class="text-gray-400 dark:text-zinc-500 truncate hidden sm:inline">
+                            — ${email.snippet}
+                        </span>
+                    </div>
+
+                    <!-- Tijd & Verwijder knop bij hover -->
+                    <div class="shrink-0 flex items-center gap-3">
+                        <span class="text-xs text-gray-400 dark:text-zinc-500 group-hover:hidden">
+                            ${email.time}
+                        </span>
+                        <button onclick="deleteEmail(event, ${email.id})" title="Verwijder mail" class="hidden group-hover:flex p-1.5 rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-500/10 transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                listContainer.appendChild(row);
+            });
+
+            lucide.createIcons();
+        }
+
+        // Update tellers in de tabbladen
+        function updateCounts() {
+            document.getElementById('count-all').innerText = emails.length;
+            ['security', 'business', 'personal', 'promotions', 'spam'].forEach(cat => {
+                const count = emails.filter(e => e.category === cat).length;
+                document.getElementById(`count-${cat}`).innerText = count;
+            });
+        }
+
+        // Wissel tussen categorie tabs
+        function filterCategory(category) {
+            currentCategory = category;
+            
+            // Update tab styling
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if (btn.dataset.tab === category) {
+                    btn.classList.add('border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+                    btn.classList.remove('border-transparent', 'text-gray-500', 'dark:text-zinc-400');
+                } else {
+                    btn.classList.remove('border-indigo-500', 'text-indigo-600', 'dark:text-indigo-400');
+                    btn.classList.add('border-transparent', 'text-gray-500', 'dark:text-zinc-400');
+                }
+            });
+
+            renderEmails();
+        }
+
+        // Eenvoudige AI Keyword Classifier (Voor je schoolproject!)
+        function classifyEmailAI(sender, subject, snippet) {
+            const text = `${sender} ${subject} ${snippet}`.toLowerCase();
+
+            if (text.includes('wachtwoord') || text.includes('inlog') || text.includes('security') || text.includes('code') || text.includes('2fa') || text.includes('waarschuwing')) {
+                return { category: 'security', confidence: '98%' };
+            }
+            if (text.includes('gewonnen') || text.includes('gratis') || text.includes('klik direct') || text.includes('crypto') || text.includes('prijs')) {
+                return { category: 'spam', confidence: '97%' };
+            }
+            if (text.includes('factuur') || text.includes('stage') || text.includes('docent') || text.includes('project') || text.includes('vergadering') || text.includes('school')) {
+                return { category: 'business', confidence: '94%' };
+            }
+            if (text.includes('korting') || text.includes('live') || text.includes('nieuwsbrief') || text.includes('aanbieding') || text.includes('sale')) {
+                return { category: 'promotions', confidence: '91%' };
+            }
+            return { category: 'personal', confidence: '88%' };
+        }
+
+        // Voeg een zelfgemaakte test-mail toe en laat de AI hem sorteren
+        function addAndSortEmail() {
+            const sender = document.getElementById('new-sender').value.trim() || "Onbekende Afzender";
+            const subject = document.getElementById('new-subject').value.trim() || "Geen onderwerp";
+            const snippet = document.getElementById('new-snippet').value.trim() || "Geen inhoud opgegeven.";
+
+            const aiResult = classifyEmailAI(sender, subject, snippet);
+            const colors = {
+                security: "bg-rose-500/20 text-rose-500",
+                business: "bg-blue-500/20 text-blue-500",
+                personal: "bg-emerald-500/20 text-emerald-500",
+                promotions: "bg-purple-500/20 text-purple-500",
+                spam: "bg-amber-500/20 text-amber-500"
+            };
+
+            const newMail = {
+                id: Date.now(),
+                sender: sender,
+                avatarColor: colors[aiResult.category],
+                initial: sender.charAt(0).toUpperCase(),
+                subject: subject,
+                snippet: snippet,
+                time: "Zojuist",
+                category: aiResult.category,
+                confidence: aiResult.confidence,
+                unread: true
+            };
+
+            emails.unshift(newMail);
+            closeTestModal();
+            showBanner(`AI heeft de mail van "${sender}" herkend als ${aiResult.category.toUpperCase()} (${aiResult.confidence} zekerheid).`);
+            renderEmails();
+
+            // Velden leegmaken
+            document.getElementById('new-sender').value = '';
+            document.getElementById('new-subject').value = '';
+            document.getElementById('new-snippet').value = '';
+        }
+
+        // Simuleer een batch nieuwe binnenkomende e-mails
+        function simulateNewEmails() {
+            const samples = [
+                { sender: "Apple ID", subject: "Nieuwe aanmelding bij iCloud", snippet: "Je Apple ID is gebruikt om in te loggen op een MacBook Pro.", category: "security", confidence: "99%", color: "bg-rose-500/20 text-rose-500" },
+                { sender: "Bol.com", subject: "20% korting op alle gaming accessoires!", snippet: "Alleen dit weekend profiteer je van hoge kortingen.", category: "promotions", confidence: "95%", color: "bg-purple-500/20 text-purple-500" },
+                { sender: "Mama", subject: "Wat wil je vanavond eten?", snippet: "Ik ben om 17:00 klaar met werken, laat even weten!", category: "personal", confidence: "96%", color: "bg-emerald-500/20 text-emerald-500" }
+            ];
+
+            const randomSample = samples[Math.floor(Math.random() * samples.length)];
+            emails.unshift({
+                id: Date.now(),
+                sender: randomSample.sender,
+                avatarColor: randomSample.color,
+                initial: randomSample.sender.charAt(0),
+                subject: randomSample.subject,
+                snippet: randomSample.snippet,
+                time: "Nu",
+                category: randomSample.category,
+                confidence: randomSample.confidence,
+                unread: true
+            });
+
+            showBanner(`Nieuwe mail ontvangen van ${randomSample.sender} → Automatisch gesorteerd onder ${randomSample.category.toUpperCase()}.`);
+            renderEmails();
+        }
+
+        // Voer AI Sorter animatie uit via de linker prompt balk
+        function runAutoSort() {
+            const promptVal = document.getElementById('ai-input').value.toLowerCase();
+            if (promptVal.includes('security')) filterCategory('security');
+            else if (promptVal.includes('spam')) filterCategory('spam');
+            else if (promptVal.includes('business')) filterCategory('business');
+            else if (promptVal.includes('personal')) filterCategory('personal');
+            else if (promptVal.includes('promo')) filterCategory('promotions');
+            else filterCategory('all');
+
+            showBanner("AI Sorter heeft alle e-mails gecontroleerd en gecategoriseerd!");
+            document.getElementById('ai-input').value = '';
+        }
+
+        // Markeer als gelezen/ongelezen
+        function toggleRead(id) {
+            const mail = emails.find(e => e.id === id);
+            if (mail) {
+                mail.unread = !mail.unread;
+                renderEmails();
             }
         }
 
-        function closeModal() {
-            const modal = document.getElementById('customModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
+        // Verwijder e-mail
+        function deleteEmail(event, id) {
+            event.stopPropagation();
+            emails = emails.filter(e => e.id !== id);
+            renderEmails();
         }
+
+        // Toon status banner bovenaan de lijst
+        function showBanner(text) {
+            const banner = document.getElementById('status-banner');
+            document.getElementById('status-text').innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i> <span>${text}</span>`;
+            banner.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        // Thema Switcher (Zwart / Licht)
+        function toggleTheme() {
+            const html = document.documentElement;
+            const icon = document.getElementById('theme-icon');
+            const text = document.getElementById('theme-text');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                icon.setAttribute('data-lucide', 'moon');
+                icon.classList.remove('text-amber-400');
+                icon.classList.add('text-indigo-600');
+                text.innerText = 'Dark Mode';
+            } else {
+                html.classList.add('dark');
+                icon.setAttribute('data-lucide', 'sun');
+                icon.classList.remove('text-indigo-600');
+                icon.classList.add('text-amber-400');
+                text.innerText = 'Light Mode';
+            }
+            lucide.createIcons();
+        }
+
+        // Modal functies
+        function openTestModal() {
+            document.getElementById('test-modal').classList.remove('hidden');
+        }
+        function closeTestModal() {
+            document.getElementById('test-modal').classList.add('hidden');
+        }
+
+        // Mobiele zijbalk toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('ai-sidebar');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('inset-y-0');
+            sidebar.classList.toggle('left-0');
+        }
+
+        // Start de app bij het laden
+        renderEmails();
     </script>
 </body>
 </html>
