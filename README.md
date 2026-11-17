@@ -8,10 +8,10 @@ Hieronder staat het overzicht van ons projectteam, inclusief de verdeling van de
 
 | Naam | Rol | GitHub-gebruikersnaam |
 | :--- | :--- | :--- |
-| **Nolan-Jay** | Manager | [@jouw-github-naam] |
-| **Jack** | Chef-product | [@github-naam] |
-| **Nando** | Chef-kwaliteit | [@github-naam] |
-| **Joppe** | Chef-marketing| [@github-naam] |
+| **Nolan-Jay** | Manager | [Nolanjayw-lang |
+| **Jack** | Chef-product | Flagguessr |
+| **Nando** | Chef-kwaliteit | NandoH252 |
+| **Joppe** | Chef-marketing| Joppeusing |
 
 ## Werkwijze & Planning
 Voor de verdeling van de taken maken wij gebruik van **GitHub Issues** en werken we met **Mijlpalen (Milestones)**. Elke rol heeft zijn eigen specifieke taken toegewezen gekregen in de repository.
