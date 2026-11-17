@@ -6,8 +6,8 @@ Ons project is de AI Mail Sorter. Dit is een slimme applicatie die met behulp va
 ## Teamleden
 Hieronder staat het overzicht van ons projectteam, inclusief de verdeling van de rollen en de bijbehorende GitHub-accounts:
 
-| Naam |         | Rol |     | GitHub-gebruikersnaam |
-
+| Naam | Rol | GitHub-gebruikersnaam |
+| :--- | :--- | :--- |
 | **Nolan-Jay** | Manager | [@jouw-github-naam] |
 | **Jack** | Chef-product | [@github-naam] |
 | **Nando** | Chef-kwaliteit | [@github-naam] |
