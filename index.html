@@ -1,886 +1,444 @@
 <!DOCTYPE html>
-
 <html lang="nl" class="dark">
-
 <head>
-
-<meta charset="UTF-8">
-
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>EasyMail — Slimme AI E-mail Sorter</title>
-
-<!-- Tailwind CSS voor styling -->
-
-<script src="https://cdn.tailwindcss.com"></script>
-
-<!-- Google Fonts: Inter -->
-
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Lucide Icons -->
-
-<script src="https://unpkg.com/lucide@latest"></script>
-
-<script>
-
-tailwind.config = {
-
-darkMode: 'class',
-
-theme: {
-
-extend: {
-
-fontFamily: {
-
-sans: ['Inter', 'sans-serif'],
-
-},
-
-colors: {
-
-oled: '#000000',
-
-surface: '#0a0a0c',
-
-surfaceHover: '#141418',
-
-borderDark: '#1f1f24',
-
-midnight: '#060b19',
-
-midnightSurface: '#0c152e'
-
-}
-
-}
-
-}
-
-}
-
-</script>
-
-<style>
-
-/* Custom scrollbar voor een strakke afwerking */
-
-::-webkit-scrollbar {
-
-width: 5px;
-
-height: 5px;
-
-}
-
-::-webkit-scrollbar-track {
-
-background: transparent;
-
-}
-
-::-webkit-scrollbar-thumb {
-
-background: #27272a;
-
-border-radius: 9999px;
-
-}
-
-::-webkit-scrollbar-thumb:hover {
-
-background: #3f3f46;
-
-}
-
-.no-scrollbar::-webkit-scrollbar {
-
-display: none;
-
-}
-
-.no-scrollbar {
-
--ms-overflow-style: none;
-
-scrollbar-width: none;
-
-}
-
-
-
-/* Midnight Blue Thema overrides */
-
-html.theme-midnight body,
-
-html.theme-midnight main {
-
-background-color: #050a18 !important;
-
-}
-
-html.theme-midnight aside,
-
-html.theme-midnight header,
-
-html.theme-midnight #utility-drawer {
-
-background-color: #0a1229 !important;
-
-border-color: #162347 !important;
-
-}
-
-html.theme-midnight .bg-oled {
-
-background-color: #050a18 !important;
-
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EasyMail — Slimme AI E-mail Sorter</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        oled: '#000000',
+                        surface: '#0a0a0c',
+                        surfaceHover: '#141418',
+                        borderDark: '#1f1f24',
+                        midnight: '#060b19',
+                        midnightSurface: '#0c152e'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Midnight Blue Thema overrides */
+        html.theme-midnight body,
+        html.theme-midnight main {
+            background-color: #050a18 !important;
+        }
+        html.theme-midnight aside,
+        html.theme-midnight header,
+        html.theme-midnight #utility-drawer {
+            background-color: #0a1229 !important;
+            border-color: #162347 !important;
+        }
+        html.theme-midnight .bg-oled {
+            background-color: #050a18 !important;
+        }
+    </style>
 </head>
-
 <body class="bg-gray-100 dark:bg-oled text-gray-900 dark:text-zinc-100 font-sans antialiased transition-colors duration-300 h-screen overflow-hidden flex flex-col">
 
-
-
-<!-- Hoofdcontainer -->
-
-<div class="flex flex-1 h-full overflow-hidden relative">
-
-
-
-<!-- LINKER ZIJBALK: EasyMail Branding, Mappen & AI Assistent -->
-
-<aside id="ai-sidebar" class="w-full md:w-72 lg:w-80 bg-white dark:bg-surface border-r border-gray-200 dark:border-borderDark flex flex-col p-4 transition-all duration-300 z-30 hidden md:flex overflow-y-auto no-scrollbar">
-
-
-<!-- Top Branding: EasyMail -->
-
-<div class="flex items-center justify-between mb-5 px-1">
-
-<div class="flex items-center gap-2.5">
-
-<div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
-
-<i data-lucide="mail-check" class="w-5 h-5"></i>
-
-</div>
-
-<div>
-
-<span class="font-bold text-base tracking-tight block leading-none">EasyMail</span>
-
-<span class="text-[11px] text-gray-400 dark:text-zinc-500">AI Smart Inbox</span>
-
-</div>
-
-</div>
-
-<button onclick="openComposeModal()" title="Nieuw bericht opstellen" class="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all">
-
-<i data-lucide="square-pen" class="w-4 h-4"></i>
-
-</button>
-
-</div>
-
-
-
-<!-- Hoofdmappen Navigatie -->
-
-<nav class="space-y-1 mb-6">
-
-<button onclick="selectFolder('inbox')" data-folder="inbox" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 transition-colors">
-
-<span class="flex items-center gap-2.5">
-
-<i data-lucide="inbox" class="w-4 h-4"></i>
-
-<span>Inbox</span>
-
-</span>
-
-<span id="folder-inbox-count" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/15">0</span>
-
-</button>
-
-<button onclick="selectFolder('sent')" data-folder="sent" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors">
-
-<span class="flex items-center gap-2.5">
-
-<i data-lucide="send" class="w-4 h-4"></i>
-
-<span>Verzonden</span>
-
-</span>
-
-<span class="text-xs text-gray-400 dark:text-zinc-600">0</span>
-
-</button>
-
-<button onclick="selectFolder('drafts')" data-folder="drafts" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors">
-
-<span class="flex items-center gap-2.5">
-
-<i data-lucide="file-text" class="w-4 h-4"></i>
-
-<span>Concepten</span>
-
-</span>
-
-<span class="text-xs text-gray-400 dark:text-zinc-600">0</span>
-
-</button>
-
-<button onclick="selectFolder('trash')" data-folder="trash" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors">
-
-<span class="flex items-center gap-2.5">
-
-<i data-lucide="trash-2" class="w-4 h-4"></i>
-
-<span>Prullenbak</span>
-
-</span>
-
-<span class="text-xs text-gray-400 dark:text-zinc-600">0</span>
-
-</button>
-
-</nav>
-
-
-
-<div class="border-t border-gray-200 dark:border-borderDark my-1"></div>
-
-
-
-<!-- AI Assistent Prompt Box (Geïnspireerd op de screenshot) -->
-
-<div class="mt-4 flex-1 flex flex-col">
-
-<div class="text-center mb-3">
-
-<h2 class="text-sm font-medium text-gray-700 dark:text-zinc-300">Waarmee kan ik je helpen?</h2>
-
-</div>
-
-
-
-<div class="bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-2xl p-3 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
-
-<textarea id="ai-input" rows="2" placeholder="Vraag EasyMail AI om te sorteren, plannen of zoeken..." class="w-full bg-transparent text-xs resize-none focus:outline-none text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-500"></textarea>
-
-<div class="flex items-center justify-between pt-2 mt-1 border-t border-gray-200 dark:border-zinc-900">
-
-<div class="flex gap-1 text-gray-400">
-
-<button onclick="openTestModal()" title="Test binnenkomende mail" class="p-1.5 hover:text-indigo-500 hover:bg-gray-200 dark:hover:bg-zinc-900 rounded-lg transition-colors">
-
-<i data-lucide="mail-plus" class="w-3.5 h-3.5"></i>
-
-</button>
-
-<button onclick="openUtilityPanel('calendar')" title="Open kalender" class="p-1.5 hover:text-indigo-500 hover:bg-gray-200 dark:hover:bg-zinc-900 rounded-lg transition-colors">
-
-<i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-
-</button>
-
-</div>
-
-<button onclick="runAutoSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all">
-
-<i data-lucide="sparkles" class="w-3 h-3"></i>
-
-<span>Sorteer</span>
-
-</button>
-
-</div>
-
-</div>
-
-
-
-<!-- Snelle Actie Chips -->
-
-<div class="mt-4 space-y-1.5">
-
-<p class="text-[11px] font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider px-1">Snelle opdrachten</p>
-
-<button onclick="runQuickAction('sort')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
-
-<span class="flex items-center gap-2">
-
-<i data-lucide="wand-2" class="w-3.5 h-3.5 text-indigo-400"></i>
-
-<span>Sorteer inbox</span>
-
-</span>
-
-<i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
-
-</button>
-
-
-
-<button onclick="filterCategory('school')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
-
-<span class="flex items-center gap-2">
-
-<i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-cyan-400"></i>
-
-<span>Vind schoolmails</span>
-
-</span>
-
-<i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
-
-</button>
-
-
-
-<button onclick="filterCategory('security')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
-
-<span class="flex items-center gap-2">
-
-<i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-400"></i>
-
-<span>Urgente security alerts</span>
-
-</span>
-
-<i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
-
-</button>
-
-
-
-<button onclick="openUtilityPanel('calendar')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
-
-<span class="flex items-center gap-2">
-
-<i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-amber-400"></i>
-
-<span>Dagplanning bekijken</span>
-
-</span>
-
-<i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
-
-</button>
-
-</div>
-
-</div>
-
-</aside>
-
-
-
-<!-- MIDDEN HOOFDSCHERM: Inbox & Categorieën -->
-
-<main class="flex-1 flex flex-col bg-white dark:bg-oled overflow-hidden min-w-0">
-
-
-<!-- Top Header Balk -->
-
-<header class="h-16 border-b border-gray-200 dark:border-borderDark px-4 md:px-6 flex items-center justify-between gap-3 shrink-0">
-
-<div class="flex items-center gap-2.5">
-
-<!-- Mobiele menu knop -->
-
-<button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-surface">
-
-<i data-lucide="menu" class="w-5 h-5"></i>
-
-</button>
-
-<div class="flex items-center gap-2 font-semibold text-base">
-
-<span id="current-folder-title">Inbox</span>
-
-</div>
-
-</div>
-
-
-
-<!-- Zoekbalk -->
-
-<div class="flex-1 max-w-lg">
-
-<div class="relative">
-
-<i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"></i>
-
-<input type="text" id="search-input" onkeyup="renderEmails()" placeholder="Zoek e-mails, contacten of labels..." class="w-full bg-gray-100 dark:bg-surface border border-transparent focus:border-indigo-500 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none transition-all placeholder-gray-400 dark:placeholder-zinc-500">
-
-</div>
-
-</div>
-
-
-
-<!-- Rechter Header Acties: Gmail Status, Thema & Test Mail -->
-
-<div class="flex items-center gap-2">
-
-<!-- Gmail API Status Badge -->
-
-<button onclick="openUtilityPanel('gmail')" title="Gmail koppeling beheren" class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-surface border border-gray-200 dark:border-borderDark hover:border-indigo-500/50 text-xs font-medium text-gray-600 dark:text-zinc-300 transition-all">
-
-<span class="w-2 h-2 rounded-full bg-amber-500"></span>
-
-<span>Gmail: Wacht op koppeling</span>
-
-</button>
-
-
-
-<!-- Snelle Thema Switcher -->
-
-<button onclick="cycleTheme()" id="theme-btn" title="Wissel thema (Zwart / Licht / Midnight)" class="p-2.5 rounded-xl bg-gray-100 dark:bg-surface hover:bg-gray-200 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark text-gray-700 dark:text-zinc-300 transition-all">
-
-<i id="theme-icon" data-lucide="moon" class="w-4 h-4 text-indigo-400"></i>
-
-</button>
-
-
-
-<!-- Test Mail Knop -->
-
-<button onclick="openTestModal()" class="bg-zinc-900 dark:bg-surface hover:bg-zinc-800 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark text-white dark:text-zinc-200 px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all">
-
-<i data-lucide="flask-conical" class="w-3.5 h-3.5 text-indigo-400"></i>
-
-<span class="hidden sm:inline">Test Mail</span>
-
-</button>
-
-
-
-<!-- Opstellen Knop -->
-
-<button onclick="openComposeModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
-
-<i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-
-<span>Opstellen</span>
-
-</button>
-
-</div>
-
-</header>
-
-
-
-<!-- Categorie Tabs (Alles, School, Security, Business, Personal, Promotions, Spam) -->
-
-<div class="border-b border-gray-200 dark:border-borderDark px-4 md:px-6 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 bg-gray-50/50 dark:bg-surface/60">
-
-<button onclick="filterCategory('all')" data-tab="all" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap transition-all">
-
-<i data-lucide="layers" class="w-3.5 h-3.5"></i>
-
-<span>Alles</span>
-
-<span id="count-all" class="text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400">0</span>
-
-</button>
-
-
-
-<button onclick="filterCategory('school')" data-tab="school" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
-
-<i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-cyan-400"></i>
-
-<span>School</span>
-
-<span id="count-school" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
-
-</button>
-
-
-
-<button onclick="filterCategory('security')" data-tab="security" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
-
-<i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-500"></i>
-
-<span>Security</span>
-
-<span id="count-security" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
-
-</button>
-
-
-
-<button onclick="filterCategory('business')" data-tab="business" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
-
-<i data-lucide="briefcase" class="w-3.5 h-3.5 text-blue-500"></i>
-
-<span>Business</span>
-
-<span id="count-business" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
-
-</button>
-
-
-
-<button onclick="filterCategory('personal')" data-tab="personal" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
-
-<i data-lucide="user" class="w-3.5 h-3.5 text-emerald-500"></i>
-
-<span>Personal</span>
-
-<span id="count-personal" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
-
-</button>
-
-
-
-<button onclick="filterCategory('promotions')" data-tab="promotions" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
-
-<i data-lucide="tag" class="w-3.5 h-3.5 text-purple-500"></i>
-
-<span>Promotions</span>
-
-<span id="count-promotions" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
-
-</button>
-
-
-
-<button onclick="filterCategory('spam')" data-tab="spam" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
-
-<i data-lucide="alert-octagon" class="w-3.5 h-3.5 text-amber-500"></i>
-
-<span>Spam</span>
-
-<span id="count-spam" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
-
-</button>
-
-</div>
-
-
-
-<!-- Sub-balk met status / notificatie -->
-
-<div id="status-banner" class="px-6 py-2 bg-indigo-500/10 border-b border-indigo-500/20 text-xs text-indigo-600 dark:text-indigo-300 flex items-center justify-between hidden">
-
-<span id="status-text" class="flex items-center gap-2">
-
-<i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-
-<span>Gereed.</span>
-
-</span>
-
-<button onclick="document.getElementById('status-banner').classList.add('hidden')" class="hover:underline text-[11px]">Sluiten</button>
-
-</div>
-
-
-
-<!-- E-mail Lijst / Empty State -->
-
-<div id="email-list" class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-borderDark">
-
-<!-- Dynamisch ingeladen -->
-
-</div>
-
-
-
-</main>
-
-
-
-<!-- UITKLAPBARE UTILITY DRAWER (Opent wanneer je op een icoon in de rechterbalk klikt) -->
-
-<div id="utility-drawer" class="w-80 bg-white dark:bg-surface border-l border-gray-200 dark:border-borderDark hidden flex-col z-20 transition-all duration-300 shrink-0">
-
-<div class="h-16 px-4 border-b border-gray-200 dark:border-borderDark flex items-center justify-between">
-
-<div class="flex items-center gap-2 font-semibold text-sm" id="drawer-title">
-
-<i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
-
-<span>Kalender</span>
-
-</div>
-
-<button onclick="closeUtilityDrawer()" class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-zinc-800 transition-colors">
-
-<i data-lucide="x" class="w-4 h-4"></i>
-
-</button>
-
-</div>
-
-<div id="drawer-content" class="flex-1 overflow-y-auto p-4 space-y-4 text-sm">
-
-<!-- Dynamische inhoud voor Kalender, Taken, Notities, Contacten, Gmail, Instellingen -->
-
-</div>
-
-</div>
-
-
-
-<!-- RECHTER HOVER-EXPANDABLE UTILITY BAR (Klapt uit bij muis-hover!) -->
-
-<aside id="right-hover-bar" class="group/bar w-14 hover:w-48 bg-white dark:bg-surface border-l border-gray-200 dark:border-borderDark flex flex-col justify-between py-3 px-2 transition-all duration-300 ease-out z-30 shrink-0 overflow-hidden select-none">
-
-
-<!-- Bovenste Utility Tools -->
-
-<div class="space-y-1.5">
-
-<button onclick="openUtilityPanel('calendar')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Kalender">
-
-<i data-lucide="calendar" class="w-5 h-5 shrink-0 text-amber-400"></i>
-
-<span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Kalender</span>
-
-</button>
-
-
-
-<button onclick="openUtilityPanel('tasks')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Taken & Deadlines">
-
-<i data-lucide="check-circle-2" class="w-5 h-5 shrink-0 text-emerald-400"></i>
-
-<span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Taken</span>
-
-</button>
-
-
-
-<button onclick="openUtilityPanel('notes')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Snelle Notities">
-
-<i data-lucide="sticky-note" class="w-5 h-5 shrink-0 text-cyan-400"></i>
-
-<span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Notities</span>
-
-</button>
-
-
-
-<button onclick="openUtilityPanel('contacts')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Contacten">
-
-<i data-lucide="users" class="w-5 h-5 shrink-0 text-purple-400"></i>
-
-<span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Contacten</span>
-
-</button>
-
-</div>
-
-
-
-<!-- Onderste Systeem Tools -->
-
-<div class="space-y-1.5 border-t border-gray-200 dark:border-borderDark pt-3">
-
-<button onclick="openUtilityPanel('gmail')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Gmail & GitHub Koppeling">
-
-<i data-lucide="plug-zap" class="w-5 h-5 shrink-0 text-rose-400"></i>
-
-<span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Gmail API</span>
-
-</button>
-
-
-
-<button onclick="openUtilityPanel('settings')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Instellingen">
-
-<i data-lucide="settings" class="w-5 h-5 shrink-0 text-zinc-400"></i>
-
-<span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Instellingen</span>
-
-</button>
-
-</div>
-
-</aside>
-
-
-
-</div>
-
-
-
-<!-- MODAL 1: Test Mail Toevoegen -->
-
-<div id="test-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-
-<div class="bg-white dark:bg-surface border border-gray-200 dark:border-borderDark rounded-2xl max-w-md w-full p-6 shadow-2xl">
-
-<div class="flex items-center justify-between mb-4">
-
-<h3 class="text-base font-semibold flex items-center gap-2">
-
-<i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
-
-<span>Test de EasyMail AI Sorter</span>
-
-</h3>
-
-<button onclick="closeTestModal()" class="text-gray-400 hover:text-white">
-
-<i data-lucide="x" class="w-5 h-5"></i>
-
-</button>
-
-</div>
-
-<p class="text-xs text-gray-500 dark:text-zinc-400 mb-4 leading-relaxed">
-
-Voer een testbericht in om te zien hoe EasyMail het automatisch indeelt onder <strong>School</strong>, <strong>Security</strong>, <strong>Business</strong>, <strong>Personal</strong>, <strong>Promotions</strong> of <strong>Spam</strong>.
-
-</p>
-
-<div class="space-y-3">
-
-<div>
-
-<label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Afzender</label>
-
-<input type="text" id="new-sender" placeholder="Bijv: Magister / Docent Informatica" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-
-</div>
-
-<div>
-
-<label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Onderwerp</label>
-
-<input type="text" id="new-subject" placeholder="Bijv: Inleverdatum opdracht AI Sorter" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
-
-</div>
-
-<div>
-
-<label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Bericht inhoud</label>
-
-<textarea id="new-snippet" rows="3" placeholder="Bijv: Vergeet niet je GitHub link in te leveren voor vrijdag..." class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"></textarea>
-
-</div>
-
-</div>
-
-<div class="flex justify-end gap-2 mt-6">
-
-<button onclick="closeTestModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-900">Annuleren</button>
-
-<button onclick="addAndSortEmail()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5">
-
-<i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
-
-<span>Sorteer & Voeg toe</span>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- MODAL 2: Nieuw Bericht Opstellen -->
-
-<div id="compose-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-
-<div class="bg-white dark:bg-surface border border-gray-200 dark:border-borderDark rounded-2xl max-w-lg w-full p-6 shadow-2xl">
-
-<div class="flex items-center justify-between mb-4">
-
-<h3 class="text-base font-semibold flex items-center gap-2">
-
-<i data-lucide="send" class="w-4 h-4 text-indigo-400"></i>
-
-<span>Nieuw bericht opstellen</span>
-
-</h3>
-
-<button onclick="closeComposeModal()" class="text-gray-400 hover:text-white">
-
-<i data-lucide="x" class="w-5 h-5"></i>
-
-</button>
-
-</div>
-
-<div class="space-y-3">
-
-<input type="email" id="compose-to" placeholder="Aan: naam@voorbeeld.nl" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-indigo-500">
-
-<input type="text" id="compose-subject" placeholder="Onderwerp" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-indigo-500">
-
-<textarea id="compose-body" rows="5" placeholder="Schrijf je bericht..." class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl p-3.5 text-sm focus:outline-none focus:border-indigo-500"></textarea>
-
-</div>
-
-<div class="flex items-center justify-between mt-5">
-
-<span class="text-[11px] text-zinc-500">Verzenden wordt actief na Gmail API koppeling</span>
-
-<div class="flex gap-2">
-
-<button onclick="closeComposeModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-gray-500 hover:bg-zinc-900">Sluiten</button>
-
-<button onclick="sendMockEmail()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5">
-
-<i data-lucide="send" class="w-3.5 h-3.5"></i>
-
-<span>Versturen</span>
-
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- JAVASCRIPT LOGICA -->
-
-<script>
-
-lucide.createIcons();
-
-
-
-let currentCategory = 'all';
-
-let currentTheme = 'dark'; // 'dark' (OLED Zwart), 'light', 'midnight'
-
-let activeUtility = null;
-
-
-
-// Lege inbox (klaar voor Gmail API koppeling)
-
-let emails = [];
-
-
-
-// Taken en notities state voor de rechter zijbalk
-
-let tasks = [
-
-{ id: 1, text: "GitHub repository opzetten voor EasyMail", done: true },
-
-{ id: 2, text: "Gmail API OA
+    <!-- Hoofdcontainer -->
+    <div class="flex flex-1 h-full overflow-hidden relative">
+
+        <!-- LINKER ZIJBALK: EasyMail Branding, Mappen & AI Assistent -->
+        <aside id="ai-sidebar" class="w-full md:w-72 lg:w-80 bg-white dark:bg-surface border-r border-gray-200 dark:border-borderDark flex flex-col p-4 transition-all duration-300 z-30 hidden md:flex overflow-y-auto no-scrollbar">
+            
+            <!-- Top Branding: EasyMail -->
+            <div class="flex items-center justify-between mb-5 px-1">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+                        <i data-lucide="mail-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <span class="font-bold text-base tracking-tight block leading-none">EasyMail</span>
+                        <span class="text-[11px] text-gray-400 dark:text-zinc-500">AI Smart Inbox</span>
+                    </div>
+                </div>
+                <button onclick="openComposeModal()" title="Nieuw bericht opstellen" class="p-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white shadow-md shadow-indigo-600/20 transition-all">
+                    <i data-lucide="square-pen" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <!-- Hoofdmappen Navigatie -->
+            <nav class="space-y-1 mb-6">
+                <button onclick="selectFolder('inbox')" data-folder="inbox" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 transition-colors">
+                    <span class="flex items-center gap-2.5">
+                        <i data-lucide="inbox" class="w-4 h-4"></i>
+                        <span>Inbox</span>
+                    </span>
+                    <span id="folder-inbox-count" class="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-500/15">0</span>
+                </button>
+                <button onclick="selectFolder('sent')" data-folder="sent" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors">
+                    <span class="flex items-center gap-2.5">
+                        <i data-lucide="send" class="w-4 h-4"></i>
+                        <span>Verzonden</span>
+                    </span>
+                    <span id="folder-sent-count" class="text-xs text-gray-400 dark:text-zinc-600">0</span>
+                </button>
+                <button onclick="selectFolder('drafts')" data-folder="drafts" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors">
+                    <span class="flex items-center gap-2.5">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span>Concepten</span>
+                    </span>
+                    <span id="folder-drafts-count" class="text-xs text-gray-400 dark:text-zinc-600">0</span>
+                </button>
+                <button onclick="selectFolder('trash')" data-folder="trash" class="folder-btn w-full flex items-center justify-between px-3 py-2 rounded-xl text-sm font-medium text-gray-600 dark:text-zinc-400 hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors">
+                    <span class="flex items-center gap-2.5">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>Prullenbak</span>
+                    </span>
+                    <span id="folder-trash-count" class="text-xs text-gray-400 dark:text-zinc-600">0</span>
+                </button>
+            </nav>
+
+            <div class="border-t border-gray-200 dark:border-borderDark my-1"></div>
+
+            <!-- AI Assistent Prompt Box -->
+            <div class="mt-4 flex-1 flex flex-col">
+                <div class="text-center mb-3">
+                    <h2 class="text-sm font-medium text-gray-700 dark:text-zinc-300">Waarmee kan ik je helpen?</h2>
+                </div>
+
+                <div class="bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-2xl p-3 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500 transition-all">
+                    <textarea id="ai-input" rows="2" placeholder="Vraag EasyMail AI om te sorteren, plannen of zoeken..." class="w-full bg-transparent text-xs resize-none focus:outline-none text-gray-800 dark:text-zinc-200 placeholder-gray-400 dark:placeholder-zinc-500"></textarea>
+                    <div class="flex items-center justify-between pt-2 mt-1 border-t border-gray-200 dark:border-zinc-900">
+                        <div class="flex gap-1 text-gray-400">
+                            <button onclick="openTestModal()" title="Test binnenkomende mail" class="p-1.5 hover:text-indigo-500 hover:bg-gray-200 dark:hover:bg-zinc-900 rounded-lg transition-colors">
+                                <i data-lucide="mail-plus" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="openUtilityPanel('calendar')" title="Open kalender" class="p-1.5 hover:text-indigo-500 hover:bg-gray-200 dark:hover:bg-zinc-900 rounded-lg transition-colors">
+                                <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                        <button onclick="runAutoSort()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium px-3 py-1.5 rounded-xl flex items-center gap-1.5 transition-all">
+                            <i data-lucide="sparkles" class="w-3 h-3"></i>
+                            <span>Sorteer</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Snelle Actie Chips -->
+                <div class="mt-4 space-y-1.5">
+                    <p class="text-[11px] font-medium text-gray-400 dark:text-zinc-500 uppercase tracking-wider px-1">Snelle opdrachten</p>
+                    <button onclick="runQuickAction('sort')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="wand-2" class="w-3.5 h-3.5 text-indigo-400"></i>
+                            <span>Sorteer inbox</span>
+                        </span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
+                    </button>
+
+                    <button onclick="filterCategory('school')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-cyan-400"></i>
+                            <span>Vind schoolmails</span>
+                        </span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
+                    </button>
+
+                    <button onclick="filterCategory('security')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-400"></i>
+                            <span>Urgente security alerts</span>
+                        </span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
+                    </button>
+
+                    <button onclick="openUtilityPanel('calendar')" class="w-full text-left px-3 py-2 rounded-xl text-xs bg-gray-50 dark:bg-zinc-900/50 hover:bg-gray-100 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark flex items-center justify-between transition-all group">
+                        <span class="flex items-center gap-2">
+                            <i data-lucide="calendar-clock" class="w-3.5 h-3.5 text-amber-400"></i>
+                            <span>Dagplanning bekijken</span>
+                        </span>
+                        <i data-lucide="chevron-right" class="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-500"></i>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MIDDEN HOOFDSCHERM: Inbox & Categorieën -->
+        <main class="flex-1 flex flex-col bg-white dark:bg-oled overflow-hidden min-w-0">
+            
+            <!-- Top Header Balk -->
+            <header class="h-16 border-b border-gray-200 dark:border-borderDark px-4 md:px-6 flex items-center justify-between gap-3 shrink-0">
+                <div class="flex items-center gap-2.5">
+                    <button onclick="toggleSidebar()" class="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-surface">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <div class="flex items-center gap-2 font-semibold text-base">
+                        <span id="current-folder-title">Inbox</span>
+                    </div>
+                </div>
+
+                <!-- Zoekbalk -->
+                <div class="flex-1 max-w-lg">
+                    <div class="relative">
+                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-zinc-500"></i>
+                        <input type="text" id="search-input" onkeyup="renderEmails()" placeholder="Zoek e-mails, contacten of labels..." class="w-full bg-gray-100 dark:bg-surface border border-transparent focus:border-indigo-500 rounded-xl pl-10 pr-4 py-2 text-sm focus:outline-none transition-all placeholder-gray-400 dark:placeholder-zinc-500">
+                    </div>
+                </div>
+
+                <!-- Rechter Header Acties -->
+                <div class="flex items-center gap-2">
+                    <!-- Gmail API Status Badge -->
+                    <button onclick="openUtilityPanel('gmail')" title="Gmail koppeling beheren" class="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-surface border border-gray-200 dark:border-borderDark hover:border-indigo-500/50 text-xs font-medium text-gray-600 dark:text-zinc-300 transition-all">
+                        <span id="gmail-status-dot" class="w-2 h-2 rounded-full bg-amber-500"></span>
+                        <span id="gmail-status-text">Gmail: Wacht op koppeling</span>
+                    </button>
+
+                    <!-- Snelle Thema Switcher -->
+                    <button onclick="cycleTheme()" id="theme-btn" title="Wissel thema (Zwart / Licht / Midnight)" class="p-2.5 rounded-xl bg-gray-100 dark:bg-surface hover:bg-gray-200 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark text-gray-700 dark:text-zinc-300 transition-all">
+                        <i id="theme-icon" data-lucide="moon" class="w-4 h-4 text-indigo-400"></i>
+                    </button>
+
+                    <!-- Test Mail Knop -->
+                    <button onclick="openTestModal()" class="bg-zinc-900 dark:bg-surface hover:bg-zinc-800 dark:hover:bg-surfaceHover border border-gray-200 dark:border-borderDark text-white dark:text-zinc-200 px-3 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all">
+                        <i data-lucide="flask-conical" class="w-3.5 h-3.5 text-indigo-400"></i>
+                        <span class="hidden sm:inline">Test Mail</span>
+                    </button>
+
+                    <!-- Opstellen Knop -->
+                    <button onclick="openComposeModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3.5 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5 transition-all shadow-sm">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                        <span>Opstellen</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Categorie Tabs -->
+            <div class="border-b border-gray-200 dark:border-borderDark px-4 md:px-6 flex items-center gap-1.5 overflow-x-auto no-scrollbar shrink-0 bg-gray-50/50 dark:bg-surface/60">
+                <button onclick="filterCategory('all')" data-tab="all" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 whitespace-nowrap transition-all">
+                    <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+                    <span>Alles</span>
+                    <span id="count-all" class="text-[11px] px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-400">0</span>
+                </button>
+
+                <button onclick="filterCategory('school')" data-tab="school" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span>School</span>
+                    <span id="count-school" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
+                </button>
+
+                <button onclick="filterCategory('security')" data-tab="security" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-rose-500"></i>
+                    <span>Security</span>
+                    <span id="count-security" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
+                </button>
+
+                <button onclick="filterCategory('business')" data-tab="business" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="briefcase" class="w-3.5 h-3.5 text-blue-500"></i>
+                    <span>Business</span>
+                    <span id="count-business" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
+                </button>
+
+                <button onclick="filterCategory('personal')" data-tab="personal" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-500"></i>
+                    <span>Personal</span>
+                    <span id="count-personal" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
+                </button>
+
+                <button onclick="filterCategory('promotions')" data-tab="promotions" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="tag" class="w-3.5 h-3.5 text-purple-500"></i>
+                    <span>Promotions</span>
+                    <span id="count-promotions" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
+                </button>
+
+                <button onclick="filterCategory('spam')" data-tab="spam" class="tab-btn flex items-center gap-2 px-3.5 py-3 text-xs font-medium border-b-2 border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-zinc-200 whitespace-nowrap transition-all">
+                    <i data-lucide="alert-octagon" class="w-3.5 h-3.5 text-amber-500"></i>
+                    <span>Spam</span>
+                    <span id="count-spam" class="text-[11px] px-1.5 py-0.5 rounded-full bg-zinc-200 dark:bg-zinc-900 text-zinc-500">0</span>
+                </button>
+            </div>
+
+            <!-- Sub-balk met status / notificatie -->
+            <div id="status-banner" class="px-6 py-2 bg-indigo-500/10 border-b border-indigo-500/20 text-xs text-indigo-600 dark:text-indigo-300 flex items-center justify-between hidden">
+                <span id="status-text" class="flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                    <span>Gereed.</span>
+                </span>
+                <button onclick="document.getElementById('status-banner').classList.add('hidden')" class="hover:underline text-[11px]">Sluiten</button>
+            </div>
+
+            <!-- E-mail Lijst / Empty State -->
+            <div id="email-list" class="flex-1 overflow-y-auto divide-y divide-gray-200 dark:divide-borderDark">
+                <!-- Dynamisch ingeladen door app.js -->
+            </div>
+
+        </main>
+
+        <!-- UITKLAPBARE UTILITY DRAWER -->
+        <div id="utility-drawer" class="w-80 bg-white dark:bg-surface border-l border-gray-200 dark:border-borderDark hidden flex-col z-20 transition-all duration-300 shrink-0">
+            <div class="h-16 px-4 border-b border-gray-200 dark:border-borderDark flex items-center justify-between">
+                <div class="flex items-center gap-2 font-semibold text-sm" id="drawer-title">
+                    <i data-lucide="calendar" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Kalender</span>
+                </div>
+                <button onclick="closeUtilityDrawer()" class="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="drawer-content" class="flex-1 overflow-y-auto p-4 space-y-4 text-sm">
+                <!-- Dynamisch ingeladen door app.js -->
+            </div>
+        </div>
+
+        <!-- RECHTER HOVER-EXPANDABLE UTILITY BAR -->
+        <aside id="right-hover-bar" class="group/bar w-14 hover:w-48 bg-white dark:bg-surface border-l border-gray-200 dark:border-borderDark flex flex-col justify-between py-3 px-2 transition-all duration-300 ease-out z-30 shrink-0 overflow-hidden select-none">
+            
+            <!-- Bovenste Utility Tools -->
+            <div class="space-y-1.5">
+                <button onclick="openUtilityPanel('calendar')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Kalender">
+                    <i data-lucide="calendar" class="w-5 h-5 shrink-0 text-amber-400"></i>
+                    <span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Kalender</span>
+                </button>
+
+                <button onclick="openUtilityPanel('tasks')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Taken & Deadlines">
+                    <i data-lucide="check-circle-2" class="w-5 h-5 shrink-0 text-emerald-400"></i>
+                    <span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Taken</span>
+                </button>
+
+                <button onclick="openUtilityPanel('notes')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Snelle Notities">
+                    <i data-lucide="sticky-note" class="w-5 h-5 shrink-0 text-cyan-400"></i>
+                    <span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Notities</span>
+                </button>
+
+                <button onclick="openUtilityPanel('contacts')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Contacten">
+                    <i data-lucide="users" class="w-5 h-5 shrink-0 text-purple-400"></i>
+                    <span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Contacten</span>
+                </button>
+            </div>
+
+            <!-- Onderste Systeem Tools -->
+            <div class="space-y-1.5 border-t border-gray-200 dark:border-borderDark pt-3">
+                <button onclick="openUtilityPanel('gmail')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Gmail & GitHub Koppeling">
+                    <i data-lucide="plug-zap" class="w-5 h-5 shrink-0 text-rose-400"></i>
+                    <span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Gmail API</span>
+                </button>
+
+                <button onclick="openUtilityPanel('settings')" class="utility-nav-btn w-full flex items-center gap-3.5 px-2.5 py-2.5 rounded-xl text-gray-500 dark:text-zinc-400 hover:text-indigo-500 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-surfaceHover transition-colors" title="Instellingen">
+                    <i data-lucide="settings" class="w-5 h-5 shrink-0 text-zinc-400"></i>
+                    <span class="text-xs font-medium whitespace-nowrap opacity-0 group-hover/bar:opacity-100 transition-opacity duration-200">Instellingen</span>
+                </button>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- MODAL 1: Test Mail Toevoegen -->
+    <div id="test-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-surface border border-gray-200 dark:border-borderDark rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold flex items-center gap-2">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Test de EasyMail AI Sorter</span>
+                </h3>
+                <button onclick="closeTestModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-zinc-400 mb-4 leading-relaxed">
+                Voer een testbericht in om te zien hoe EasyMail het automatisch indeelt onder <strong>School</strong>, <strong>Security</strong>, <strong>Business</strong>, <strong>Personal</strong>, <strong>Promotions</strong> of <strong>Spam</strong>.
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Afzender</label>
+                    <input type="text" id="new-sender" placeholder="Bijv: Magister / Docent Informatica" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Onderwerp</label>
+                    <input type="text" id="new-subject" placeholder="Bijv: Inleverdatum opdracht AI Sorter" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-gray-600 dark:text-zinc-400">Bericht inhoud</label>
+                    <textarea id="new-snippet" rows="3" placeholder="Bijv: Vergeet niet je GitHub link in te leveren voor vrijdag..." class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button onclick="closeTestModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-gray-500 hover:bg-gray-100 dark:hover:bg-zinc-900">Annuleren</button>
+                <button onclick="addAndSortEmail()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5">
+                    <i data-lucide="wand-2" class="w-3.5 h-3.5"></i>
+                    <span>Sorteer & Voeg toe</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Nieuw Bericht Opstellen -->
+    <div id="compose-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-surface border border-gray-200 dark:border-borderDark rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-semibold flex items-center gap-2">
+                    <i data-lucide="send" class="w-4 h-4 text-indigo-400"></i>
+                    <span>Nieuw bericht opstellen</span>
+                </h3>
+                <button onclick="closeComposeModal()" class="text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="space-y-3">
+                <input type="email" id="compose-to" placeholder="Aan: naam@voorbeeld.nl" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                <input type="text" id="compose-subject" placeholder="Onderwerp" class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl px-3.5 py-2 text-sm focus:outline-none focus:border-indigo-500">
+                <textarea id="compose-body" rows="5" placeholder="Schrijf je bericht..." class="w-full bg-gray-50 dark:bg-oled border border-gray-200 dark:border-borderDark rounded-xl p-3.5 text-sm focus:outline-none focus:border-indigo-500"></textarea>
+            </div>
+            <div class="flex items-center justify-between mt-5">
+                <span class="text-[11px] text-zinc-500">Slaat op onder Verzonden</span>
+                <div class="flex gap-2">
+                    <button onclick="closeComposeModal()" class="px-4 py-2 rounded-xl text-xs font-medium text-gray-500 hover:bg-zinc-900">Sluiten</button>
+                    <button onclick="sendMockEmail()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-medium flex items-center gap-1.5">
+                        <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                        <span>Versturen</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: E-mail Leesvenster -->
+    <div id="reader-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-surface border border-gray-200 dark:border-borderDark rounded-2xl max-w-2xl w-full p-6 shadow-2xl flex flex-col max-h-[85vh]">
+            <div class="flex items-start justify-between gap-4 pb-4 border-b border-gray-200 dark:border-borderDark">
+                <div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span id="reader-badge" class="text-[11px] font-semibold px-2.5 py-0.5 rounded-full">School</span>
+                        <span id="reader-date" class="text-xs text-gray-400 dark:text-zinc-500">Vandaag</span>
+                    </div>
+                    <h3 id="reader-subject" class="text-lg font-bold leading-snug">Onderwerp</h3>
+                    <p id="reader-sender" class="text-xs text-gray-500 dark:text-zinc-400 mt-1">Van: afzender@voorbeeld.nl</p>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button id="reader-delete-btn" class="p-2 rounded-xl text-gray-400 hover:text-rose-400 hover:bg-zinc-900 transition-colors" title="Verplaats naar prullenbak">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="closeReaderModal()" class="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-zinc-900 transition-colors">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div id="reader-body" class="py-5 text-sm text-gray-700 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap overflow-y-auto flex-1">
+            </div>
+        </div>
+    </div>
+
+    <!-- EXTERNE JAVASCRIPT BESTANDEN -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="app.js"></script>
+</body>
+</html>
